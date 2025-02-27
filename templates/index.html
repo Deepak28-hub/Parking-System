@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Parking System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <header>
+        <h1>Smart Parking System</h1>
+    </header>
+
+    <main>
+        <!-- Live Parking Video Feed -->
+        <section class="video-section">
+            <h2>Live Parking Lot</h2>
+            <div class="video-container">
+                <img id="video-feed" src="{{ url_for('video_feed') }}" alt="Parking Video Feed">
+            </div>
+        </section>
+
+        <!-- Parking Slots Availability -->
+        <section class="slots-section">
+            <h2>Available Parking Slots</h2>
+            <div id="parking-slots" class="slots-container">
+                <p>Loading parking data...</p>
+            </div>
+        </section>
+    </main>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
