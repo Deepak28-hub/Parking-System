@@ -24,6 +24,7 @@ def init_db():
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         slot_id INTEGER UNIQUE,
                         user_id TEXT)''')
+    cursor.execute("DELETE FROM bookings")
     conn.commit()
     conn.close()
 
