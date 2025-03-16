@@ -3,32 +3,187 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Parking System</title>
+    <title>SmartPark Pro | Parking Management System</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<script src="{{ url_for('static', filename='script.js') }}" defer></script>
+
 </head>
 <body>
-
-    <header>
-        <h1>Smart Parking System</h1>
-    </header>
-
-    <main>
-        <!-- Live Parking Video Feed -->
-        <section class="video-section">
-            <h2>Live Parking Lot</h2>
-            <div class="video-container">
-                <img id="video-feed" src="{{ url_for('video_feed') }}" alt="Parking Video Feed">
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="logo">
+                <i class="fas fa-parking"></i>
+                <span>SmartPark Pro</span>
             </div>
-        </section>
-
-        <!-- Parking Slots Availability -->
-        <section class="slots-section">
-            <h2>Available Parking Slots</h2>
-            <div id="parking-slots" class="slots-container">
-                <p>Loading parking data...</p>
+            <ul class="nav-links">
+                <li class="active"><a href="#"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li><a href="#parking-map"><i class="fas fa-map-marked-alt"></i> Parking Map</a></li>
+                <li><a href="#booking-section"><i class="fas fa-ticket-alt"></i> Book Slot</a></li>
+                <li><a href="#statistics"><i class="fas fa-chart-pie"></i> Statistics</a></li>
+            </ul>
+            <div class="sidebar-footer">
+                <div class="total-status">
+                    <div id="total-slots" class="status-item">
+                        <i class="fas fa-car-side"></i>
+                        <div>
+                            <span class="count">70</span>
+                            <span class="label">Total Slots</span>
+                        </div>
+                    </div>
+                    <div id="available-count" class="status-item">
+                        <i class="fas fa-check-circle"></i>
+                        <div>
+                            <span class="count">--</span>
+                            <span class="label">Available</span>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </section>
-    </main>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <header class="main-header">
+                <div class="page-title">
+                    <h1>Parking Management Dashboard</h1>
+                    <p>Real-time monitoring and control</p>
+                </div>
+                <div class="header-actions">
+                    <div class="date-time">
+                        <span id="current-date"></span>
+                        <span id="current-time"></span>
+                    </div>
+                    <div class="user-info">
+                        <span>Admin User</span>
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dashboard Overview Cards -->
+            <section class="dashboard-cards">
+                <div class="card">
+                    <div class="card-icon"><i class="fas fa-car"></i></div>
+                    <div class="card-info">
+                        <h3>Occupied Slots</h3>
+                        <p id="occupied-count">--</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-icon"><i class="fas fa-check-circle"></i></div>
+                    <div class="card-info">
+                        <h3>Available Slots</h3>
+                        <p id="available-count-card">--</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-icon"><i class="fas fa-bookmark"></i></div>
+                    <div class="card-info">
+                        <h3>Booked Slots</h3>
+                        <p id="booked-count">--</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-icon"><i class="fas fa-percent"></i></div>
+                    <div class="card-info">
+                        <h3>Occupancy Rate</h3>
+                        <p id="occupancy-rate">--</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Live Video Feed -->
+            <section class="video-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-video"></i> Live Parking Surveillance</h2>
+                    <div class="header-actions">
+                        <button id="refresh-video" class="btn btn-small"><i class="fas fa-sync-alt"></i> Refresh</button>
+                    </div>
+                </div>
+                <div class="video-container">
+                    <img id="video-feed" src="{{ url_for('video_feed') }}" alt="Parking Video Feed">
+                </div>
+            </section>
+
+            <!-- Parking Map -->
+            <section id="parking-map" class="parking-map-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-map-marked-alt"></i> Parking Map</h2>
+                    <div class="map-legend">
+                        <span><i class="fas fa-square available"></i> Available</span>
+                        <span><i class="fas fa-square occupied"></i> Occupied</span>
+                        <span><i class="fas fa-square booked"></i> Booked</span>
+                    </div>
+                </div>
+                <div class="parking-map">
+                    <div id="parking-slots" class="slots-grid">
+                        <!-- Slots will be populated dynamically -->
+                        <div class="loading-spinner">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <p>Loading parking data...</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Booking Section -->
+            <section id="booking-section" class="booking-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-ticket-alt"></i> Book a Parking Slot</h2>
+                </div>
+                <div class="booking-form">
+                    <div class="form-group">
+                        <label for="slot-select">Select Available Slot:</label>
+                        <select id="slot-select">
+                            <option value="">-- Choose a slot --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="user-id">Your ID/Name:</label>
+                        <input type="text" id="user-id" placeholder="Enter your ID or name">
+                    </div>
+                    <button id="book-button" class="btn btn-primary">Book Now</button>
+                </div>
+                <div id="booking-status" class="booking-status"></div>
+            </section>
+
+            <!-- Statistics Section -->
+            <section id="statistics" class="statistics-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-chart-pie"></i> Parking Statistics</h2>
+                </div>
+                <div class="stats-container">
+                    <div class="stats-card">
+                        <h3>Occupancy Rate</h3>
+                        <div class="stats-visual">
+                            <div id="occupancy-gauge" class="gauge">
+                                <div class="gauge-arc"></div>
+                                <div class="gauge-value">0%</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stats-card">
+                        <h3>Slot Status</h3>
+                        <div class="stats-visual">
+                            <div id="status-chart" class="chart">
+                                <div class="chart-segment available"></div>
+                                <div class="chart-segment occupied"></div>
+                                <div class="chart-segment booked"></div>
+                            </div>
+                            <div class="chart-legend">
+                                <span><i class="fas fa-square available"></i> Available</span>
+                                <span><i class="fas fa-square occupied"></i> Occupied</span>
+                                <span><i class="fas fa-square booked"></i> Booked</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
