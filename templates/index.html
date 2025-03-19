@@ -6,9 +6,7 @@
     <title>SmartPark Pro | Parking Management System</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-<script src="{{ url_for('static', filename='script.js') }}" defer></script>
-
+    <script src="{{ url_for('static', filename='script.js') }}" defer></script>
 </head>
 <body>
     <div class="dashboard-container">
@@ -22,6 +20,7 @@
                 <li class="active"><a href="#"><i class="fas fa-home"></i> Dashboard</a></li>
                 <li><a href="#parking-map"><i class="fas fa-map-marked-alt"></i> Parking Map</a></li>
                 <li><a href="#booking-section"><i class="fas fa-ticket-alt"></i> Book Slot</a></li>
+                <li><a href="/bookings"><i class="fas fa-list"></i> Bookings</a></li>
                 <li><a href="#statistics"><i class="fas fa-chart-pie"></i> Statistics</a></li>
             </ul>
             <div class="sidebar-footer">
@@ -145,10 +144,74 @@
                         <label for="user-id">Your ID/Name:</label>
                         <input type="text" id="user-id" placeholder="Enter your ID or name">
                     </div>
+                    <div class="form-group">
+                        <label for="number-plate">Vehicle Number Plate:</label>
+                        <input type="text" id="number-plate" placeholder="Enter vehicle number plate">
+                    </div>
                     <button id="book-button" class="btn btn-primary">Book Now</button>
                 </div>
                 <div id="booking-status" class="booking-status"></div>
             </section>
+
+            <!-- Current Bookings Section -->
+            <section id="current-bookings" class="current-bookings-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-list"></i> Current Bookings</h2>
+                    <div class="header-actions">
+                        <button id="refresh-bookings" class="btn btn-small"><i class="fas fa-sync-alt"></i> Refresh</button>
+                        <button id="view-bookings" class="btn btn-small"><i class="fas fa-external-link-alt"></i> View All</button>
+                    </div>
+                </div>
+                <div class="bookings-container">
+                    <div id="no-bookings-message" class="message-box" style="display: none;">
+                        <i class="fas fa-info-circle"></i>
+                        <p>No active bookings at the moment.</p>
+                    </div>
+                    <div class="booking-actions">
+                        <button id="update-booking-btn" class="btn"><i class="fas fa-edit"></i> Update Selected Booking</button>
+                    </div>
+                    <table class="bookings-table">
+                        <thead>
+                            <tr>
+                                <th>Slot</th>
+                                <th>Number Plate</th>
+                                <th>User</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bookings-list">
+                            <!-- Bookings will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Update Booking Modal -->
+            <div id="update-booking-modal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3><i class="fas fa-edit"></i> Update Booking</h3>
+                        <span class="close-modal">&times;</span>
+                    </div>
+                    <div class="modal-body">
+                        <form id="update-booking-form">
+                            <input type="hidden" id="update-slot-id">
+                            <div class="form-group">
+                                <label for="update-user-id">User ID/Name:</label>
+                                <input type="text" id="update-user-id" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="update-number-plate">Vehicle Number Plate:</label>
+                                <input type="text" id="update-number-plate">
+                            </div>
+                            <div class="form-actions">
+                                <button type="button" id="cancel-update" class="btn btn-secondary">Cancel</button>
+                                <button type="submit" class="btn btn-primary">Update Booking</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
 
             <!-- Statistics Section -->
             <section id="statistics" class="statistics-section">
@@ -184,7 +247,5 @@
             </section>
         </main>
     </div>
-
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
