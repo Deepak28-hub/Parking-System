@@ -23,6 +23,48 @@ document.addEventListener("DOMContentLoaded", function () {
     if (refreshBookingsBtn) {
         refreshBookingsBtn.addEventListener('click', fetchBookings);
     }
+    
+    // Add view bookings button event listener
+    const viewBookingsBtn = document.getElementById('view-bookings');
+    if (viewBookingsBtn) {
+        viewBookingsBtn.addEventListener('click', function() {
+            window.location.href = '/bookings';
+        });
+    }
+    
+    // Add event listener for update booking button
+    const updateBookingBtn = document.getElementById('update-booking-btn');
+    if (updateBookingBtn) {
+        updateBookingBtn.addEventListener('click', function() {
+            // Show modal with empty fields
+            showUpdateBookingModal();
+        });
+    }
+    
+    // Add event listener for update booking form submission
+    const updateBookingForm = document.getElementById('update-booking-form');
+    if (updateBookingForm) {
+        updateBookingForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            updateBooking();
+        });
+    }
+    
+    // Add event listener for cancel update button
+    const cancelUpdateBtn = document.getElementById('cancel-update');
+    if (cancelUpdateBtn) {
+        cancelUpdateBtn.addEventListener('click', function() {
+            hideUpdateBookingModal();
+        });
+    }
+    
+    // Close modal when clicking on X
+    const closeModal = document.querySelector('.close-modal');
+    if (closeModal) {
+        closeModal.addEventListener('click', function() {
+            hideUpdateBookingModal();
+        });
+    }
 });
 
 function updateDateTime() {
@@ -80,33 +122,41 @@ function updateParkingStats(data) {
     document.getElementById('booked-count').textContent = bookedSlots;
     document.getElementById('occupancy-rate').textContent = occupancyRate + '%';
     
-    // Update gauge
+    // Update gauge if it exists
     const gaugeValue = document.querySelector('.gauge-value');
-    gaugeValue.textContent = occupancyRate + '%';
+    if (gaugeValue) {
+        gaugeValue.textContent = occupancyRate + '%';
+        
+        // Update gauge arc rotation based on occupancy
+        const gaugeArc = document.querySelector('.gauge-arc');
+        if (gaugeArc) {
+            const rotationDegree = (occupancyRate / 100) * 180;
+            gaugeArc.style.transform = `rotate(${rotationDegree}deg)`;
+        }
+    }
     
-    // Update gauge arc rotation based on occupancy
-    const gaugeArc = document.querySelector('.gauge-arc');
-    const rotationDegree = (occupancyRate / 100) * 180;
-    gaugeArc.style.transform = `rotate(${rotationDegree}deg)`;
-    
-    // Update chart segments
+    // Update chart segments if they exist
     const availableSegment = document.querySelector('.chart-segment.available');
     const occupiedSegment = document.querySelector('.chart-segment.occupied');
     const bookedSegment = document.querySelector('.chart-segment.booked');
     
-    // Calculate percentages for chart
-    const availablePercentage = (freeSlots / totalSlots) * 100;
-    const occupiedPercentage = (occupiedSlots / totalSlots) * 100;
-    const bookedPercentage = (bookedSlots / totalSlots) * 100;
-    
-    // Update chart segments with percentages
-    availableSegment.style.width = `${availablePercentage}%`;
-    occupiedSegment.style.width = `${occupiedPercentage}%`;
-    bookedSegment.style.width = `${bookedPercentage}%`;
+    if (availableSegment && occupiedSegment && bookedSegment) {
+        // Calculate percentages for chart
+        const availablePercentage = (freeSlots / totalSlots) * 100;
+        const occupiedPercentage = (occupiedSlots / totalSlots) * 100;
+        const bookedPercentage = (bookedSlots / totalSlots) * 100;
+        
+        // Update chart segments with percentages
+        availableSegment.style.width = `${availablePercentage}%`;
+        occupiedSegment.style.width = `${occupiedPercentage}%`;
+        bookedSegment.style.width = `${bookedPercentage}%`;
+    }
 }
 
 function updateParkingMap(data) {
     const slotsContainer = document.getElementById('parking-slots');
+    if (!slotsContainer) return;
+    
     slotsContainer.innerHTML = ''; // Clear previous data
     
     // Create slots grid - adjust for 70 slots
@@ -122,13 +172,7 @@ function updateParkingMap(data) {
         slotDiv.dataset.id = i;
         
         const slotStatus = slotData[i] || 'unknown';
-        if (slotStatus === 'free') {
-            slotDiv.classList.add('available');
-        } else if (slotStatus === 'occupied') {
-            slotDiv.classList.add('occupied');
-        } else if (slotStatus === 'booked') {
-            slotDiv.classList.add('booked');
-        }
+        slotDiv.classList.add(slotStatus);
         
         // Add slot number and status
         slotDiv.innerHTML = `
@@ -150,6 +194,8 @@ function updateParkingMap(data) {
 
 function updateBookingOptions(data) {
     const slotSelect = document.getElementById('slot-select');
+    if (!slotSelect) return;
+    
     // Clear previous options except the first one
     while (slotSelect.options.length > 1) {
         slotSelect.remove(1);
@@ -167,21 +213,8 @@ function updateBookingOptions(data) {
 }
 
 function updateBookingsDisplay(bookings) {
-    // Update booked slots on map
-    // First, reset all slots to their original state
-    fetchParkingStatus();
-    
-    // Then, highlight booked slots
-    bookings.forEach(booking => {
-        const slotId = booking[1]; // Assuming booking[1] is the slot_id
-        const slotDiv = document.querySelector(`.slot[data-id="${slotId}"]`);
-        
-        if (slotDiv) {
-            slotDiv.classList.remove('available', 'occupied');
-            slotDiv.classList.add('booked');
-            slotDiv.querySelector('.slot-status').textContent = 'Booked';
-        }
-    });
+    // This function is already updated in the parking status call
+    // No need to duplicate the logic here
 }
 
 function updateBookingsTable(bookings) {
@@ -208,21 +241,28 @@ function updateBookingsTable(bookings) {
     
     // Add bookings to the table
     bookings.forEach(booking => {
-        const [id, slotId, numberPlate, userId] = booking;
-        
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td>Slot ${slotId}</td>
-            <td>${numberPlate || 'N/A'}</td>
-            <td>${userId}</td>
+            <td>Slot ${booking.slot_id}</td>
+            <td>${booking.number_plate || 'N/A'}</td>
+            <td>${booking.user_id}</td>
             <td>
-                <button class="btn btn-cancel" data-slot="${slotId}">Cancel</button>
+                <button class="btn btn-update" data-slot="${booking.slot_id}" data-user="${booking.user_id}" data-plate="${booking.number_plate || 'N/A'}">Update</button>
+                <button class="btn btn-cancel" data-slot="${booking.slot_id}">Cancel</button>
             </td>
         `;
         
         // Add cancel button event listener
         row.querySelector('.btn-cancel').addEventListener('click', function() {
-            cancelBooking(slotId);
+            cancelBooking(booking.slot_id);
+        });
+        
+        // Add update button event listener
+        row.querySelector('.btn-update').addEventListener('click', function() {
+            const slotId = this.getAttribute('data-slot');
+            const userId = this.getAttribute('data-user');
+            const numberPlate = this.getAttribute('data-plate');
+            showUpdateBookingModal(slotId, userId, numberPlate);
         });
         
         bookingsList.appendChild(row);
@@ -232,8 +272,11 @@ function updateBookingsTable(bookings) {
 function bookSlot() {
     const slotId = document.getElementById('slot-select').value;
     const userId = document.getElementById('user-id').value;
-    const numberPlate = document.getElementById('number-plate') ? 
-                        document.getElementById('number-plate').value : '';
+    let numberPlate = 'N/A';
+    
+    if (document.getElementById('number-plate')) {
+        numberPlate = document.getElementById('number-plate').value;
+    }
     
     if (!slotId) {
         showBookingStatus('Please select a parking slot', 'error');
@@ -261,7 +304,14 @@ function bookSlot() {
             number_plate: numberPlate
         }),
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(data => {
+                throw new Error(data.error || 'Error booking slot');
+            });
+        }
+        return response.json();
+    })
     .then(data => {
         showBookingStatus(data.message, 'success');
         // Clear form fields
@@ -276,7 +326,7 @@ function bookSlot() {
     })
     .catch(error => {
         console.error('Error booking slot:', error);
-        showBookingStatus('Failed to book slot. Please try again.', 'error');
+        showBookingStatus(error.message || 'Failed to book slot. Please try again.', 'error');
     });
 }
 
@@ -300,8 +350,79 @@ function cancelBooking(slotId) {
     });
 }
 
+function showUpdateBookingModal(slotId = null, userId = '', numberPlate = '') {
+    const modal = document.getElementById('update-booking-modal');
+    if (!modal) return;
+    
+    // Set form values if provided
+    if (slotId !== null) {
+        document.getElementById('update-slot-id').value = slotId;
+        document.getElementById('update-user-id').value = userId;
+        document.getElementById('update-number-plate').value = numberPlate;
+    }
+    
+    // Show the modal
+    modal.style.display = 'block';
+}
+
+function hideUpdateBookingModal() {
+    const modal = document.getElementById('update-booking-modal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+function updateBooking() {
+    const slotId = document.getElementById('update-slot-id').value;
+    const userId = document.getElementById('update-user-id').value;
+    const numberPlate = document.getElementById('update-number-plate').value || 'N/A';
+    
+    if (!slotId) {
+        showBookingStatus('Please select a slot to update', 'error');
+        return;
+    }
+    
+    if (!userId) {
+        showBookingStatus('Please enter user ID/name', 'error');
+        return;
+    }
+    
+    fetch('/api/update-booking', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            slot_id: slotId,
+            user_id: userId,
+            number_plate: numberPlate
+        }),
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(data => {
+                throw new Error(data.error || 'Error updating booking');
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        showBookingStatus(data.message, 'success');
+        hideUpdateBookingModal();
+        // Refresh data
+        fetchParkingStatus();
+        fetchBookings();
+    })
+    .catch(error => {
+        console.error('Error updating booking:', error);
+        showBookingStatus(error.message || 'Failed to update booking. Please try again.', 'error');
+    });
+}
+
 function showBookingStatus(message, type) {
     const statusDiv = document.getElementById('booking-status');
+    if (!statusDiv) return;
+    
     statusDiv.textContent = message;
     statusDiv.className = 'booking-status';
     statusDiv.classList.add(type);
@@ -319,5 +440,7 @@ function showBookingStatus(message, type) {
 
 function showError(message) {
     const slotsContainer = document.getElementById('parking-slots');
-    slotsContainer.innerHTML = `<div class="error-message">${message}</div>`;
+    if (slotsContainer) {
+        slotsContainer.innerHTML = `<div class="error-message">${message}</div>`;
+    }
 }
