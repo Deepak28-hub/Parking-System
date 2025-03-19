@@ -377,7 +377,7 @@ body {
 }
 
 .slot.booked {
-    background-color: rgba(52, 152, 219, 0.1);
+    background-color: rgba(30, 191, 244, 0.927);
     border: 1px solid var(--secondary-color);
 }
 
